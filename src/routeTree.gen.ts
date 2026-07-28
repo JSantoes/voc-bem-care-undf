@@ -9,141 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as ProfissionalRouteImport } from './routes/profissional'
-import { Route as PacienteRouteImport } from './routes/paciente'
-import { Route as DoarRouteImport } from './routes/doar'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as ConsultaIdRouteImport } from './routes/consulta.$id'
-import { Route as CadastroProfissionalRouteImport } from './routes/cadastro.profissional'
-import { Route as CadastroPacienteRouteImport } from './routes/cadastro.paciente'
 
-const ProfissionalRoute = ProfissionalRouteImport.update({
-  id: '/profissional',
-  path: '/profissional',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const PacienteRoute = PacienteRouteImport.update({
-  id: '/paciente',
-  path: '/paciente',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DoarRoute = DoarRouteImport.update({
-  id: '/doar',
-  path: '/doar',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ConsultaIdRoute = ConsultaIdRouteImport.update({
-  id: '/consulta/$id',
-  path: '/consulta/$id',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CadastroProfissionalRoute = CadastroProfissionalRouteImport.update({
-  id: '/cadastro/profissional',
-  path: '/cadastro/profissional',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const CadastroPacienteRoute = CadastroPacienteRouteImport.update({
-  id: '/cadastro/paciente',
-  path: '/cadastro/paciente',
-  getParentRoute: () => rootRouteImport,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/doar': typeof DoarRoute
-  '/paciente': typeof PacienteRoute
-  '/profissional': typeof ProfissionalRoute
-  '/cadastro/paciente': typeof CadastroPacienteRoute
-  '/cadastro/profissional': typeof CadastroProfissionalRoute
-  '/consulta/$id': typeof ConsultaIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/doar': typeof DoarRoute
-  '/paciente': typeof PacienteRoute
-  '/profissional': typeof ProfissionalRoute
-  '/cadastro/paciente': typeof CadastroPacienteRoute
-  '/cadastro/profissional': typeof CadastroProfissionalRoute
-  '/consulta/$id': typeof ConsultaIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/doar': typeof DoarRoute
-  '/paciente': typeof PacienteRoute
-  '/profissional': typeof ProfissionalRoute
-  '/cadastro/paciente': typeof CadastroPacienteRoute
-  '/cadastro/profissional': typeof CadastroProfissionalRoute
-  '/consulta/$id': typeof ConsultaIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | '/doar'
-    | '/paciente'
-    | '/profissional'
-    | '/cadastro/paciente'
-    | '/cadastro/profissional'
-    | '/consulta/$id'
+  fullPaths: '/'
   fileRoutesByTo: FileRoutesByTo
-  to:
-    | '/'
-    | '/doar'
-    | '/paciente'
-    | '/profissional'
-    | '/cadastro/paciente'
-    | '/cadastro/profissional'
-    | '/consulta/$id'
-  id:
-    | '__root__'
-    | '/'
-    | '/doar'
-    | '/paciente'
-    | '/profissional'
-    | '/cadastro/paciente'
-    | '/cadastro/profissional'
-    | '/consulta/$id'
+  to: '/'
+  id: '__root__' | '/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  DoarRoute: typeof DoarRoute
-  PacienteRoute: typeof PacienteRoute
-  ProfissionalRoute: typeof ProfissionalRoute
-  CadastroPacienteRoute: typeof CadastroPacienteRoute
-  CadastroProfissionalRoute: typeof CadastroProfissionalRoute
-  ConsultaIdRoute: typeof ConsultaIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/profissional': {
-      id: '/profissional'
-      path: '/profissional'
-      fullPath: '/profissional'
-      preLoaderRoute: typeof ProfissionalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/paciente': {
-      id: '/paciente'
-      path: '/paciente'
-      fullPath: '/paciente'
-      preLoaderRoute: typeof PacienteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/doar': {
-      id: '/doar'
-      path: '/doar'
-      fullPath: '/doar'
-      preLoaderRoute: typeof DoarRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/': {
       id: '/'
       path: '/'
@@ -151,49 +48,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/consulta/$id': {
-      id: '/consulta/$id'
-      path: '/consulta/$id'
-      fullPath: '/consulta/$id'
-      preLoaderRoute: typeof ConsultaIdRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cadastro/profissional': {
-      id: '/cadastro/profissional'
-      path: '/cadastro/profissional'
-      fullPath: '/cadastro/profissional'
-      preLoaderRoute: typeof CadastroProfissionalRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cadastro/paciente': {
-      id: '/cadastro/paciente'
-      path: '/cadastro/paciente'
-      fullPath: '/cadastro/paciente'
-      preLoaderRoute: typeof CadastroPacienteRouteImport
-      parentRoute: typeof rootRouteImport
-    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  DoarRoute: DoarRoute,
-  PacienteRoute: PacienteRoute,
-  ProfissionalRoute: ProfissionalRoute,
-  CadastroPacienteRoute: CadastroPacienteRoute,
-  CadastroProfissionalRoute: CadastroProfissionalRoute,
-  ConsultaIdRoute: ConsultaIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
