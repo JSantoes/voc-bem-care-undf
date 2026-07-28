@@ -77,11 +77,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "VocêBem · Telessaúde gratuita" },
+      { title: "OrientaAI · UNDF" },
       {
         name: "description",
         content:
-          "Plataforma de telessaúde que conecta pacientes de baixa renda a psicólogos e nutricionistas voluntários.",
+          "Plataforma OrientaAI da Universidade do Distrito Federal (UNDF) para permanência estudantil, PCD, benefícios PAE e saúde.",
       },
       { name: "author", content: "VocêBem" },
       { property: "og:type", content: "website" },
