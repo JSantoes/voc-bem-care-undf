@@ -1,56 +1,112 @@
-// VIEW: manager reports module — generates class summaries
-import { useState } from "react";
+// VIEW: manager reports module — generates filtered class summaries + PDF export.
+import { useMemo, useState } from "react";
 import { FileText, Download, Sparkles } from "lucide-react";
-import { students, type Course, type Turma } from "@/models/undf-data";
+import type { Course, School, Student } from "@/models/undf-data";
+import { ALL, filterStudents, type Filters } from "@/controllers/use-students";
+import { generateReportPdf } from "@/lib/pdf";
 
-const COURSES: (Course | "todos")[] = ["todos", "Engenharia", "Medicina", "Direito", "Pedagogia", "Computação"];
-const TURMAS: (Turma | "todos")[] = ["todos", "2024.1", "2024.2", "2025.1"];
+type Option = { value: string; label: string };
 
-export function ReportsModule() {
-  const [course, setCourse] = useState<Course | "todos">("todos");
-  const [turma, setTurma] = useState<Turma | "todos">("todos");
-  const [report, setReport] = useState<null | ReturnType<typeof buildReport>>(null);
+export function ReportsModule({
+  schools,
+  courses,
+  students,
+}: {
+  schools: School[];
+  courses: Course[];
+  students: Student[];
+}) {
+  const [filters, setFilters] = useState<Filters>({ school: ALL, course: ALL, turma: ALL });
+  const [hasReport, setHasReport] = useState(false);
+
+  const schoolOptions: Option[] = [
+    { value: ALL, label: "Todas as escolas" },
+    ...schools.map((s) => ({ value: s.id, label: `${s.code} · ${s.name}` })),
+  ];
+  const availableCourses = useMemo(
+    () => (filters.school === ALL ? courses : courses.filter((c) => c.schoolId === filters.school)),
+    [courses, filters.school],
+  );
+  const courseOptions: Option[] = [
+    { value: ALL, label: "Todos os cursos" },
+    ...availableCourses.map((c) => ({ value: c.id, label: c.name })),
+  ];
+  const turmaOptions: Option[] = useMemo(
+    () => [
+      { value: ALL, label: "Todas as turmas" },
+      ...Array.from(new Set(students.map((s) => s.turma)))
+        .sort()
+        .map((t) => ({ value: t, label: t })),
+    ],
+    [students],
+  );
+
+  const report = useMemo(
+    () => buildReport(students, schools, courses, filters),
+    [students, schools, courses, filters],
+  );
+
+  const exportPdf = () => {
+    // Always reflects the currently selected filters (live data from the DB).
+    const live = buildReport(students, schools, courses, filters);
+    generateReportPdf(
+      { school: live.scopeSchool, course: live.scopeCourse, turma: live.scopeTurma },
+      {
+        total: live.total,
+        alto: live.alto,
+        pctAlto: live.pctAlto,
+        avgAttendance: live.avgAttendance,
+        avgGpa: live.avgGpa,
+        pcd: live.pcd,
+        beneficiados: live.beneficiados,
+        recommendation: live.recommendation,
+      },
+    );
+  };
 
   return (
     <section className="space-y-4">
       <header>
         <h2 className="text-2xl font-bold tracking-tight">Módulo de Relatórios</h2>
-        <p className="text-sm text-muted-foreground">Gere resumos sobre a situação geral das turmas</p>
+        <p className="text-sm text-muted-foreground">
+          Gere resumos sobre a situação geral das turmas e exporte em PDF
+        </p>
       </header>
 
-      <div className="grid gap-4 rounded-2xl border border-border/60 bg-card p-5 shadow-soft md:grid-cols-[1fr_1fr_auto]">
+      <div className="grid gap-4 rounded-2xl border border-border/60 bg-card p-5 shadow-soft sm:grid-cols-2 lg:grid-cols-4">
+        <Field label="Escola">
+          <SelectInput
+            value={filters.school}
+            options={schoolOptions}
+            onChange={(v) => setFilters((f) => ({ ...f, school: v, course: ALL }))}
+          />
+        </Field>
         <Field label="Curso">
-          <select
-            value={course}
-            onChange={(e) => setCourse(e.target.value as Course | "todos")}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-          >
-            {COURSES.map((c) => (
-              <option key={c}>{c}</option>
-            ))}
-          </select>
+          <SelectInput
+            value={filters.course}
+            options={courseOptions}
+            onChange={(v) => setFilters((f) => ({ ...f, course: v }))}
+          />
         </Field>
         <Field label="Turma">
-          <select
-            value={turma}
-            onChange={(e) => setTurma(e.target.value as Turma | "todos")}
-            className="w-full rounded-lg border border-input bg-background px-3 py-2 text-sm"
-          >
-            {TURMAS.map((t) => (
-              <option key={t}>{t}</option>
-            ))}
-          </select>
+          <SelectInput
+            value={filters.turma}
+            options={turmaOptions}
+            onChange={(v) => setFilters((f) => ({ ...f, turma: v }))}
+          />
         </Field>
-        <button
-          onClick={() => setReport(buildReport(course, turma))}
-          className="inline-flex items-center justify-center gap-2 self-end rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:scale-105"
-        >
-          <Sparkles className="h-4 w-4" />
-          Gerar relatório
-        </button>
+        <div className="flex items-end">
+          <button
+            onClick={() => setHasReport(true)}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-soft transition-transform hover:scale-[1.02]"
+          >
+            <Sparkles className="h-4 w-4" />
+            Gerar relatório
+          </button>
+        </div>
       </div>
 
-      {report && (
+      {hasReport && (
         <article className="rounded-2xl border border-border/60 bg-card p-6 shadow-soft">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
@@ -60,11 +116,14 @@ export function ReportsModule() {
               <div>
                 <h3 className="font-bold">Resumo executivo</h3>
                 <p className="text-xs text-muted-foreground">
-                  {report.scope} · gerado agora
+                  {report.scopeSchool} · {report.scopeCourse} · {report.scopeTurma} · gerado agora
                 </p>
               </div>
             </div>
-            <button className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs font-semibold hover:bg-muted">
+            <button
+              onClick={exportPdf}
+              className="inline-flex items-center gap-1.5 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs font-semibold transition-colors hover:bg-muted"
+            >
               <Download className="h-3.5 w-3.5" />
               PDF
             </button>
@@ -89,10 +148,27 @@ export function ReportsModule() {
   );
 }
 
-function buildReport(course: Course | "todos", turma: Turma | "todos") {
-  const list = students.filter(
-    (s) => (course === "todos" || s.course === course) && (turma === "todos" || s.turma === turma),
-  );
+type ReportResult = {
+  scopeSchool: string;
+  scopeCourse: string;
+  scopeTurma: string;
+  total: number;
+  alto: number;
+  pctAlto: number;
+  avgAttendance: number;
+  avgGpa: number;
+  pcd: number;
+  beneficiados: number;
+  recommendation: string;
+};
+
+function buildReport(
+  students: Student[],
+  schools: School[],
+  courses: Course[],
+  f: Filters,
+): ReportResult {
+  const list = filterStudents(students, f);
   const total = list.length || 1;
   const alto = list.filter((s) => s.risk === "alto").length;
   const avgAttendance = Math.round(list.reduce((a, s) => a + s.attendance, 0) / total);
@@ -101,11 +177,19 @@ function buildReport(course: Course | "todos", turma: Turma | "todos") {
   const pcd = list.filter((s) => s.pcd).length;
   const beneficiados = list.filter((s) => s.benefits.length > 0).length;
   const recommendation =
-    pctAlto > 30
-      ? "Priorizar busca ativa e reforço acadêmico. Encaminhar estudantes de alto risco ao Núcleo de Apoio Psicopedagógico da UNDF."
-      : "Manter monitoramento contínuo e ampliar comunicação sobre benefícios do PAE.";
+    list.length === 0
+      ? "Não há estudantes para os filtros selecionados. Ajuste os critérios e gere novamente."
+      : pctAlto > 30
+        ? "Priorizar busca ativa e reforço acadêmico. Encaminhar estudantes de alto risco ao Núcleo de Apoio Psicopedagógico da UNDF."
+        : "Manter monitoramento contínuo e ampliar comunicação sobre benefícios do PAE.";
+
+  const schoolName = schools.find((s) => s.id === f.school)?.name;
+  const courseName = courses.find((c) => c.id === f.course)?.name;
+
   return {
-    scope: `${course === "todos" ? "Todos os cursos" : course} · ${turma === "todos" ? "Todas as turmas" : turma}`,
+    scopeSchool: f.school === ALL ? "Todas as escolas" : (schoolName ?? f.school),
+    scopeCourse: f.course === ALL ? "Todos os cursos" : (courseName ?? f.course),
+    scopeTurma: f.turma === ALL ? "Todas as turmas" : f.turma,
     total: list.length,
     alto,
     pctAlto,
@@ -128,8 +212,33 @@ function Stat({ k, v }: { k: string; v: string | number }) {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <label className="block">
-      <span className="mb-1 block text-xs font-semibold uppercase text-muted-foreground">{label}</span>
+      <span className="mb-1 block text-xs font-semibold uppercase text-muted-foreground">
+        {label}
+      </span>
       {children}
     </label>
+  );
+}
+function SelectInput({
+  value,
+  onChange,
+  options,
+}: {
+  value: string;
+  onChange: (v: string) => void;
+  options: Option[];
+}) {
+  return (
+    <select
+      value={value}
+      onChange={(e) => onChange(e.target.value)}
+      className="h-10 w-full truncate rounded-lg border border-input bg-background px-3 text-sm font-medium outline-none transition-colors hover:border-primary/40 focus-visible:border-primary focus-visible:ring-2 focus-visible:ring-ring"
+    >
+      {options.map((o) => (
+        <option key={o.value} value={o.value}>
+          {o.label}
+        </option>
+      ))}
+    </select>
   );
 }
