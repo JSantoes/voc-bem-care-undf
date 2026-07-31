@@ -64,7 +64,7 @@ bun run dev
 npm run dev
 ```
 
-A aplicação sobe em `http://localhost:3000` (porta definida pela config do Lovable/Vite).
+A aplicação sobe em `http://localhost:8080` (porta definida pela config do Lovable/Vite).
 
 ### 3. Build de produção
 
