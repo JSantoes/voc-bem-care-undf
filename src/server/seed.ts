@@ -208,7 +208,7 @@ function benefitsFor(i: number, pcd: boolean): Benefit[] {
 // ---------------------------------------------------------------------------
 // Bump this whenever the seed data changes so an existing local DB is rebuilt
 // automatically (no need to delete data/undf.sqlite by hand).
-const SEED_VERSION = 2;
+const SEED_VERSION = 3;
 
 export function runSeed(db: DB) {
   const stored = db.prepare("SELECT val FROM meta WHERE key = 'seed_version'").get() as
@@ -267,7 +267,12 @@ export function runSeed(db: DB) {
     COURSES.forEach((course, courseIdx) => {
       for (let k = 0; k < 4; k++) {
         const i = studentCounter++;
-        const name = `${pick(FIRST, i * 3 + courseIdx)} ${pick(LAST, i * 7 + k)}`;
+        // Name must be unique across ALL courses so the same person isn't shown
+        // enrolled in more than one course. Indexing both pools by the global
+        // student index guarantees uniqueness: a collision would require
+        // i ≡ i' (mod 16) AND i ≡ i' (mod 12), i.e. i ≡ i' (mod 48), which is
+        // impossible for the 32 students seeded here.
+        const name = `${pick(FIRST, i - 1)} ${pick(LAST, i - 1)}`;
         const turma = pick(TURMAS, i * 2 + k);
         const attendance = 55 + ((i * 13 + k * 5) % 45);
         const gpa = Math.round((4 + ((i * 7 + k * 3) % 60) / 10) * 10) / 10;
