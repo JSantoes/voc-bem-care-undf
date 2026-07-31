@@ -1,10 +1,10 @@
 // VIEW: PCD & PAE benefits monitoring table with privacy masking
 import { useState } from "react";
 import { Eye, EyeOff, Accessibility, BadgeCheck, Lock } from "lucide-react";
-import { students } from "@/models/undf-data";
+import type { Student } from "@/models/undf-data";
 import { maskCpf, maskName } from "@/lib/mask";
 
-export function PcdBenefitsTable() {
+export function PcdBenefitsTable({ students }: { students: Student[] }) {
   const [revealed, setRevealed] = useState(false);
   const [onlyPcd, setOnlyPcd] = useState(false);
   const list = students.filter((s) => (onlyPcd ? s.pcd : true));
@@ -22,7 +22,9 @@ export function PcdBenefitsTable() {
           <button
             onClick={() => setOnlyPcd((v) => !v)}
             className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition-colors ${
-              onlyPcd ? "border-primary bg-primary/10 text-primary" : "border-border/60 bg-card text-muted-foreground"
+              onlyPcd
+                ? "border-primary bg-primary/10 text-primary"
+                : "border-border/60 bg-card text-muted-foreground"
             }`}
           >
             <Accessibility className="h-3.5 w-3.5" />
@@ -40,7 +42,8 @@ export function PcdBenefitsTable() {
 
       <div className="overflow-hidden rounded-2xl border border-border/60 bg-card shadow-soft">
         <div className="flex items-center gap-2 border-b border-border/60 bg-muted/40 px-4 py-2 text-xs text-muted-foreground">
-          <Lock className="h-3 w-3" /> Dados criptografados em trânsito e em repouso (AES-256 simulado)
+          <Lock className="h-3 w-3" /> Dados criptografados em trânsito e em repouso (AES-256
+          simulado)
         </div>
         <div className="overflow-x-auto">
           <table className="w-full min-w-[720px] text-sm">

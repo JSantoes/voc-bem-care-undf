@@ -1,7 +1,13 @@
-// Frontend privacy: simulated encryption / masking of sensitive fields
+// Frontend privacy: simulated encryption / masking of sensitive fields.
+//
+// CPF masking rule (UNDF/OrientaAI): reveal ONLY the 3 central digits and the
+// 2 check digits, masking the rest with asterisks.
+//   Example: 123.682.456-72  ->  ***.682.***-72
 export function maskCpf(cpf: string, revealed: boolean) {
   if (revealed) return cpf;
-  return cpf.replace(/\d(?=\d{2})/g, "•");
+  const digits = cpf.replace(/\D/g, "").padStart(11, "0");
+  const d = digits.split("");
+  return `***.${d[3]}${d[4]}${d[5]}.***-${d[9]}${d[10]}`;
 }
 
 export function maskEmail(email: string, revealed: boolean) {

@@ -1,30 +1,36 @@
 // VIEW: student profile card with simulated encryption of sensitive fields
 import { useState } from "react";
 import { Eye, EyeOff, ShieldCheck, KeyRound } from "lucide-react";
-import { currentStudent } from "@/models/undf-data";
+import type { Student } from "@/models/undf-data";
 import { maskCpf, maskEmail, encryptedPreview } from "@/lib/mask";
 
-export function PrivacyProfile() {
+export function PrivacyProfile({ student }: { student: Student | null }) {
   const [revealed, setRevealed] = useState(false);
+  if (!student) {
+    return (
+      <section className="rounded-2xl border border-border/60 bg-card p-6 shadow-soft">
+        <p className="text-sm text-muted-foreground">Nenhum estudante ativo encontrado.</p>
+      </section>
+    );
+  }
+  const initials = student.name
+    .split(" ")
+    .map((p) => p[0])
+    .slice(0, 2)
+    .join("");
   return (
     <section className="rounded-2xl border border-border/60 bg-gradient-to-br from-primary/10 via-card to-chart-2/10 p-6 shadow-soft">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex min-w-0 items-center gap-4">
           <span className="grid h-14 w-14 shrink-0 place-items-center rounded-2xl bg-primary text-lg font-black text-primary-foreground shadow-soft">
-            {currentStudent.name
-              .split(" ")
-              .map((p) => p[0])
-              .slice(0, 2)
-              .join("")}
+            {initials}
           </span>
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase text-primary">Bem-vindo(a) de volta</p>
             <h1 className="truncate text-2xl font-black tracking-tight sm:text-3xl">
-              {currentStudent.name}
+              {student.name}
             </h1>
-            <p className="truncate text-sm text-muted-foreground">
-              Matrícula {currentStudent.matricula}
-            </p>
+            <p className="truncate text-sm text-muted-foreground">Matrícula {student.matricula}</p>
           </div>
         </div>
         <button
@@ -37,10 +43,14 @@ export function PrivacyProfile() {
       </div>
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2">
-        <Field label="CPF" value={maskCpf(currentStudent.cpf, revealed)} />
-        <Field label="E-mail institucional" value={maskEmail(currentStudent.email, revealed)} />
-        <Field label="Token de sessão (AES-256)" value={encryptedPreview(currentStudent.matricula)} mono />
-        <Field label="Prontuário médico" value={revealed ? "Consulte na área de saúde" : encryptedPreview(currentStudent.name)} mono />
+        <Field label="CPF" value={maskCpf(student.cpf, revealed)} />
+        <Field label="E-mail institucional" value={maskEmail(student.email, revealed)} />
+        <Field label="Token de sessão (AES-256)" value={encryptedPreview(student.matricula)} mono />
+        <Field
+          label="Prontuário médico"
+          value={revealed ? "Consulte na área de saúde" : encryptedPreview(student.name)}
+          mono
+        />
       </div>
 
       <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-background/60 px-3 py-1.5 text-xs text-muted-foreground">

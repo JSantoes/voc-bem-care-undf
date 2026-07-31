@@ -1,19 +1,28 @@
-// CONTROLLER: filtering + metrics for the manager dashboard
+// CONTROLLER: filtering + metrics for the manager dashboard.
+// Data is passed in from the route loader (sourced from SQLite); this file is
+// pure presentation logic and holds no data of its own.
 import { useMemo } from "react";
-import { students, evasionByCourse, type Course, type Turma } from "@/models/undf-data";
+import { evasionByCourse, type Student } from "@/models/undf-data";
 
-export function useFilteredStudents(course: Course | "todos", turma: Turma | "todos") {
-  return useMemo(
-    () =>
-      students.filter(
-        (s) => (course === "todos" || s.course === course) && (turma === "todos" || s.turma === turma),
-      ),
-    [course, turma],
+export const ALL = "todos";
+
+export type Filters = {
+  school: string; // schoolId | "todos"
+  course: string; // courseId | "todos"
+  turma: string; // turma | "todos"
+};
+
+export function filterStudents(students: Student[], f: Filters): Student[] {
+  return students.filter(
+    (s) =>
+      (f.school === ALL || s.schoolId === f.school) &&
+      (f.course === ALL || s.courseId === f.course) &&
+      (f.turma === ALL || s.turma === f.turma),
   );
 }
 
-export function useEvasionMetrics(course: Course | "todos", turma: Turma | "todos") {
-  const filtered = useFilteredStudents(course, turma);
+export function useEvasionMetrics(students: Student[], f: Filters) {
+  const filtered = useMemo(() => filterStudents(students, f), [students, f]);
   return useMemo(() => {
     const total = filtered.length || 1;
     const alto = filtered.filter((s) => s.risk === "alto").length;
